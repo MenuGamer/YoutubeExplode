@@ -20,6 +20,13 @@ internal partial class SearchResponse
         _content.GetPropertyOrNull("contents")
         ?? _content.GetPropertyOrNull("onResponseReceivedCommands");
 
+    /*[Lazy]
+    private JsonElement? MusicContentRoot =>
+        ContentRoot
+            ?.EnumerateDescendantProperties("musicResponsiveListItemRenderer")
+            ?.Select(x => x.GetPropertyOrNull("tabIdentifier") == "music_search_catalog");*/
+
+
     [Lazy]
     public IReadOnlyList<VideoData> Videos =>
         ContentRoot
@@ -40,6 +47,13 @@ internal partial class SearchResponse
             ?.EnumerateDescendantProperties("channelRenderer")
             .Select(j => new ChannelData(j))
             .ToArray() ?? Array.Empty<ChannelData>();
+
+    [Lazy]
+    public IReadOnlyList<MusicData> Musics =>
+        ContentRoot
+            ?.EnumerateDescendantProperties("musicResponsiveListItemRenderer")
+            .Select(j => new MusicData(j))
+            .ToArray() ?? Array.Empty<MusicData>();
 
     [Lazy]
     public string? ContinuationToken =>
@@ -207,6 +221,48 @@ internal partial class SearchResponse
                 .ToArray() ?? Array.Empty<ThumbnailData>();
 
         public ChannelData(JsonElement content) => _content = content;
+    }
+}
+
+internal partial class SearchResponse
+{
+    public class MusicData
+    {
+        private readonly JsonElement _content;
+
+        [Lazy]
+        public string? Id =>
+            _content
+                .GetPropertyOrNull("playlistItemData")
+                ?.GetPropertyOrNull("videoId")
+                ?.GetStringOrNull();
+
+        [Lazy]
+        public string? Title =>
+            _content
+                .GetPropertyOrNull("flexColumns")
+                ?.EnumerateArrayOrNull()
+                ?.FirstOrNull()
+                ?.GetPropertyOrNull("musicResponsiveListItemFlexColumnRenderer")
+                ?.GetPropertyOrNull("text")
+                ?.GetPropertyOrNull("runs")
+                ?.EnumerateArrayOrNull()
+                ?.Select(j => j.GetPropertyOrNull("text")?.GetStringOrNull())
+                .WhereNotNull()
+                .ConcatToString();
+
+        [Lazy]
+        public IReadOnlyList<ThumbnailData> Thumbnails =>
+            _content
+                .GetPropertyOrNull("thumbnail")
+                ?.GetPropertyOrNull("musicThumbnailRenderer")
+                ?.GetPropertyOrNull("thumbnail")
+                ?.GetPropertyOrNull("thumbnails")
+                ?.EnumerateArrayOrNull()
+                ?.Select(j => new ThumbnailData(j))
+                .ToArray() ?? Array.Empty<ThumbnailData>();
+
+        public MusicData(JsonElement content) => _content = content;
     }
 }
 

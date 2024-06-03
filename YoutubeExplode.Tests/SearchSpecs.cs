@@ -58,4 +58,17 @@ public class SearchSpecs
         // Assert
         channels.Should().NotBeEmpty();
     }
+
+    [Fact]
+    public async Task I_can_get_music_results_from_a_search_query()
+    {
+        // Arrange
+        var youtube = new YoutubeClient();
+
+        // Act
+        var music = await youtube.Search.GetMusicsAsync("UwU");
+
+        // Assert
+        music.Should().NotBeEmpty();
+    }
 }

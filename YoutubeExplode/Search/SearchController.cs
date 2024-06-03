@@ -20,7 +20,9 @@ internal class SearchController
     {
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
-            "https://www.youtube.com/youtubei/v1/search"
+            ((int)searchFilter >= (int)SearchFilter.Media)
+                ? "https://music.youtube.com/youtubei/v1/search"
+                : "https://www.youtube.com/youtubei/v1/search"
         )
         {
             Content = new StringContent(
@@ -32,6 +34,9 @@ internal class SearchController
                         SearchFilter.Video => "EgIQAQ%3D%3D",
                         SearchFilter.Playlist => "EgIQAw%3D%3D",
                         SearchFilter.Channel => "EgIQAg%3D%3D",
+                        SearchFilter.Album => "EgWKAQIYAWoSEAMQBBAJEA4QChAFEBEQEBAV",
+                        SearchFilter.Artist => "EgWKAQIgAWoSEAMQBBAJEA4QChAFEBEQEBAV",
+                        SearchFilter.Music => "EgWKAQIIAWoSEAMQBBAJEA4QChAFEBEQEBAV",
                         _ => null
                     }}}",
                     "continuation": "{{continuationToken}}",

@@ -23,5 +23,25 @@ public enum SearchFilter
     /// <summary>
     /// Only search for channels.
     /// </summary>
-    Channel
+    Channel,
+
+    /// <summary>
+    /// Use YouTube Music search engine without filter.
+    /// </summary>
+    Media,
+
+    /// <summary>
+    /// Only search for artists.
+    /// </summary>
+    Artist,
+
+    /// <summary>
+    /// Only search for albums.
+    /// </summary>
+    Album,
+
+    /// <summary>
+    /// Only search for music.
+    /// </summary>
+    Music,
 }

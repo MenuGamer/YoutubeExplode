@@ -228,6 +228,54 @@ public class SearchClient
                 results.Add(channel);
             }
 
+            // Music results
+            foreach (var musicData in searchResults.Musics)
+            {
+                if (searchFilter is not SearchFilter.Media and not SearchFilter.Music)
+                {
+                    Debug.Fail("Did not expect music in search results.");
+                    break;
+                }
+
+                var songId =
+                    musicData.Id ?? throw new YoutubeExplodeException("Could not extract song ID.");
+
+                var songTitle =
+                    musicData.Title
+                    ?? throw new YoutubeExplodeException("Could not extract song title.");
+
+                var songThumbnails = musicData.Thumbnails
+                    .Select(t =>
+                    {
+                        var thumbnailUrl =
+                            t.Url
+                            ?? throw new YoutubeExplodeException(
+                                "Could not extract song thumbnail URL."
+                            );
+
+                        var thumbnailWidth =
+                            t.Width
+                            ?? throw new YoutubeExplodeException(
+                                "Could not extract song thumbnail width."
+                            );
+
+                        var thumbnailHeight =
+                            t.Height
+                            ?? throw new YoutubeExplodeException(
+                                "Could not extract song thumbnail height."
+                            );
+
+                        var thumbnailResolution = new Resolution(thumbnailWidth, thumbnailHeight);
+
+                        return new Thumbnail(thumbnailUrl, thumbnailResolution);
+                    })
+                    .ToArray();
+
+                var song = new MusicSearchResult(songId, songTitle, songThumbnails);
+
+                results.Add(song);
+            }
+
             yield return Batch.Create(results);
 
             continuationToken = searchResults.ContinuationToken;
@@ -280,6 +328,17 @@ public class SearchClient
         CancellationToken cancellationToken = default
     ) =>
         GetResultBatchesAsync(searchQuery, SearchFilter.Channel, cancellationToken)
+            .FlattenAsync()
+            .OfTypeAsync<ChannelSearchResult>();
+
+    /// <summary>
+    /// Enumerates music search results returned by the specified query.
+    /// </summary>
+    public IAsyncEnumerable<ChannelSearchResult> GetMusicsAsync(
+        string searchQuery,
+        CancellationToken cancellationToken = default
+    ) =>
+        GetResultBatchesAsync(searchQuery, SearchFilter.Music, cancellationToken)
             .FlattenAsync()
             .OfTypeAsync<ChannelSearchResult>();
 }
